@@ -27,7 +27,6 @@ import { closeReceiverModal } from "@/store/slices/uiSlice";
 import { setSelectedCurrency } from "@/store/slices/currencySlice";
 import { fetchModalTransactions, fetchTransactions } from "@/store/slices/transactionSlice";
 import { CurrencyCode } from "@/types";
-import { getSocket } from "@/lib/socket";
 
 export function ReceiverModal() {
   const dispatch = useAppDispatch();
@@ -52,29 +51,7 @@ export function ReceiverModal() {
       // Fetch all for this receiver
       dispatch(fetchModalTransactions());
     }
-
-    // WebSocket listener for real-time updates when modal is open
-    const s = getSocket();
-    if (s) {
-      s.emit("join", "transactions");
-      s.on("transactions", (data: any) => {
-        if (isOpen && receiver) {
-          console.log("Modal real-time update received:", data);
-          // Re-fetch both dashboard and modal data to be safe
-          dispatch(fetchTransactions());
-          dispatch(fetchModalTransactions(selectedCurrency || undefined));
-        }
-      });
-    }
-
-    return () => {
-      const s = getSocket();
-      if (s) {
-        s.off("transactions");
-        s.emit("leave", "transactions");
-      }
-    };
-  }, [isOpen, receiver, dispatch, selectedCurrency]);
+  }, [isOpen, receiver, dispatch]);
 
   // 2. Derive unique currencies and keep them stable
   const [stableCurrencies, setStableCurrencies] = useState<any[]>([]);
